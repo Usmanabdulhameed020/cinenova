@@ -18,7 +18,12 @@ mongoose.connect(MONGODB_URI)
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('MongoDB connection error:', err));
 
-// Basic Route
+// Root Route
+app.get('/', (req, res) => {
+  res.send('Backend is up!');
+});
+
+// Basic Health Route
 app.get('/api/health', (req, res) => {
   res.json({ status: 'Backend is running', database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected' });
 });
