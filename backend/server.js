@@ -14,18 +14,25 @@ app.use(express.json());
 
 // Database Connection
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/cineflow';
+
 mongoose.connect(MONGODB_URI)
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('MongoDB connection error:', err));
 
 // Root Route
 app.get('/', (req, res) => {
-  res.send('Backend is up!');
+  res.send('Backend is running successfully');
 });
 
-// Basic Health Route
+// Health Route
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'Backend is running', database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected' });
+  res.json({
+    status: 'Backend is running',
+    database:
+      mongoose.connection.readyState === 1
+        ? 'Connected'
+        : 'Disconnected',
+  });
 });
 
 // Watchlist Routes
