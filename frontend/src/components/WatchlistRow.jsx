@@ -13,7 +13,7 @@ export default function WatchlistRow({ onClick, showToast }) {
   const fetchWatchlist = async () => {
     if (!auth.currentUser) return;
     try {
-      const res = await fetch(`/api/watchlist/${auth.currentUser.uid}`);
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URI}/api/watchlist/${auth.currentUser.uid}`);
       const data = await res.json();
       setItems(data);
     } catch (err) {
@@ -30,7 +30,7 @@ export default function WatchlistRow({ onClick, showToast }) {
   const confirmDelete = async () => {
     if (!deleteId) return;
     try {
-      const res = await fetch(`/api/watchlist/${deleteId}`, { method: 'DELETE' });
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URI}/api/watchlist/${deleteId}`, { method: 'DELETE' });
       if (res.ok) {
         setItems(items.filter(item => item._id !== deleteId));
         showToast("Removed from watchlist", "success");
@@ -48,7 +48,7 @@ export default function WatchlistRow({ onClick, showToast }) {
     e.stopPropagation();
     const newStatus = currentStatus === 'watched' ? 'want_to_watch' : 'watched';
     try {
-      const res = await fetch(`/api/watchlist/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URI}/api/watchlist/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })

@@ -58,7 +58,7 @@ export default function MovieModal({ id, type, onClose, showToast }) {
 
   const handleAddToWatchlist = async () => {
     try {
-      const response = await fetch('/api/watchlist', {
+      const response = await fetch(`${import.meta.env.VITE_BACKEND_URI}/api/watchlist`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
