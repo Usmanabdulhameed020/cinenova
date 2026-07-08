@@ -7,6 +7,7 @@ export default function MovieModal({ id, type, onClose, showToast }) {
   const [details, setDetails] = useState(null);
   const [trailerUrl, setTrailerUrl] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [playMode, setPlayMode] = useState("trailer"); // "trailer" or "movie"
 
   useEffect(() => {
     let isMounted = true;
@@ -104,7 +105,14 @@ export default function MovieModal({ id, type, onClose, showToast }) {
         </button>
 
         <div className="relative pt-[56.25%] bg-black overflow-hidden">
-          {trailerUrl ? (
+          {playMode === "movie" ? (
+            <iframe
+              src={`https://vidsrc.me/embed/${type === 'tv' ? 'tv' : 'movie'}?tmdb=${details.id}`}
+              className="absolute top-0 left-0 w-full h-full border-0"
+              allowFullScreen
+              title="Full Movie"
+            ></iframe>
+          ) : trailerUrl ? (
             <iframe
               src={trailerUrl.includes('youtube') 
                 ? `${trailerUrl.replace('watch?v=', 'embed/')}?autoplay=1&mute=1&controls=1&modestbranding=1&rel=0&enablejsapi=1&origin=${window.location.origin}`
@@ -135,9 +143,17 @@ export default function MovieModal({ id, type, onClose, showToast }) {
                 {trailerUrl && <a href={trailerUrl} target="_blank" rel="noreferrer" className="text-red-500 hover:text-red-400 underline decoration-2 underline-offset-4 transition-colors">Open in YouTube</a>}
               </div>
             </div>
-            <button onClick={handleAddToWatchlist} className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full font-black text-lg transition flex items-center gap-2 shadow-xl shadow-red-600/20 active:scale-95">
-              + Watchlist
-            </button>
+            <div className="flex gap-2">
+              <button 
+                onClick={() => setPlayMode(playMode === "movie" ? "trailer" : "movie")}
+                className="bg-white hover:bg-gray-200 text-black px-6 py-3 rounded-full font-black text-lg transition flex items-center gap-2 active:scale-95"
+              >
+                {playMode === "movie" ? "Watch Trailer" : "Watch Full Movie"}
+              </button>
+              <button onClick={handleAddToWatchlist} className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full font-black text-lg transition flex items-center gap-2 shadow-xl shadow-red-600/20 active:scale-95 whitespace-nowrap">
+                + Watchlist
+              </button>
+            </div>
           </div>
           <p className="text-gray-400 text-lg leading-relaxed max-w-3xl">{details.overview}</p>
           {details.genres && (
