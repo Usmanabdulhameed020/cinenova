@@ -4,6 +4,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import LandingPage from "./components/LandingPage";
 import AuthPage from "./components/AuthPage";
 import Home from "./components/Home";
+import AdminPage from "./components/AdminPage";
 
 import { auth } from "./firebase";
 import { onAuthStateChanged } from "firebase/auth";
@@ -67,6 +68,14 @@ export default function App() {
         element={
           <ProtectedRoute user={user}>
             <Home user={user} />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute user={user}>
+            <AdminPage />
           </ProtectedRoute>
         }
       />

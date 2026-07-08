@@ -51,6 +51,10 @@ app.get('/api/health', (req, res) => {
 const watchlistRoutes = require('./routes/watchlist');
 app.use('/api/watchlist', watchlistRoutes);
 
+// Download Routes
+const downloadRoutes = require('./routes/downloads');
+app.use('/api/downloads', downloadRoutes);
+
 // Start Server
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

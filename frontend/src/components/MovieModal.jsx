@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { X } from "lucide-react";
+import { X, Download } from "lucide-react";
+import DownloadModal from "./DownloadModal";
 import { auth } from "../firebase";
 import { API, TMDB_API_KEY, IMG, BACKEND_URL } from "../config";
 
@@ -8,6 +9,7 @@ export default function MovieModal({ id, type, onClose, showToast }) {
   const [trailerUrl, setTrailerUrl] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [playMode, setPlayMode] = useState("trailer"); // "trailer" or "movie"
+  const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -153,6 +155,13 @@ export default function MovieModal({ id, type, onClose, showToast }) {
               <button onClick={handleAddToWatchlist} className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full font-black text-lg transition flex items-center gap-2 shadow-xl shadow-red-600/20 active:scale-95 whitespace-nowrap">
                 + Watchlist
               </button>
+              <button 
+                onClick={() => setIsDownloadModalOpen(true)}
+                className="bg-white/10 hover:bg-white/20 text-white px-5 py-3 rounded-full font-black text-lg transition flex items-center justify-center gap-2 border border-white/10 active:scale-95"
+                title="Download"
+              >
+                <Download size={22} />
+              </button>
             </div>
           </div>
           <p className="text-gray-400 text-lg leading-relaxed max-w-3xl">{details.overview}</p>
@@ -165,6 +174,14 @@ export default function MovieModal({ id, type, onClose, showToast }) {
           )}
         </div>
       </div>
+
+      <DownloadModal 
+        isOpen={isDownloadModalOpen} 
+        onClose={() => setIsDownloadModalOpen(false)} 
+        details={details} 
+        type={type}
+        showToast={showToast}
+      />
     </div>
   );
 }
