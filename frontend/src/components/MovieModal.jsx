@@ -135,11 +135,11 @@ export default function MovieModal({ id, type, onClose, showToast }) {
           )}
         </div>
 
-        <div className="p-8">
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <h2 className="text-3xl md:text-5xl font-black uppercase italic text-white leading-tight">{details.title || details.name}</h2>
-              <div className="flex gap-4 mt-2 text-sm font-bold items-center">
+        <div className="p-6 md:p-8">
+          <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-start mb-6">
+            <div className="flex-1 min-w-0">
+              <h2 className="text-2xl md:text-4xl lg:text-5xl font-black uppercase italic text-white leading-tight break-words">{details.title || details.name}</h2>
+              <div className="flex flex-wrap gap-2 md:gap-4 mt-2 text-xs md:text-sm font-bold items-center">
                 <span className="text-green-500">{Math.round(details.vote_average * 10)}% Match</span>
                 <span className="text-gray-400 border border-gray-700 px-2 py-0.5 rounded">{(details.release_date || details.first_air_date)?.split("-")[0]}</span>
                 <span className="text-gray-500 bg-white/10 px-2 py-0.5 rounded uppercase tracking-wider" title="Use this ID in the Admin Panel to link a video!">
@@ -148,22 +148,25 @@ export default function MovieModal({ id, type, onClose, showToast }) {
                 {trailerUrl && <a href={trailerUrl} target="_blank" rel="noreferrer" className="text-red-500 hover:text-red-400 underline decoration-2 underline-offset-4 transition-colors">Open in YouTube</a>}
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap items-center gap-2 shrink-0 w-full md:w-auto">
               <button 
                 onClick={() => setPlayMode(playMode === "movie" ? "trailer" : "movie")}
-                className="bg-white hover:bg-gray-200 text-black px-6 py-3 rounded-full font-black text-lg transition flex items-center gap-2 active:scale-95"
+                className="flex-1 md:flex-initial bg-white hover:bg-gray-200 text-black px-4 py-2 md:px-5 md:py-2.5 rounded-full font-bold text-sm md:text-base transition flex items-center justify-center gap-2 active:scale-95 whitespace-nowrap"
               >
                 {playMode === "movie" ? "Watch Trailer" : "Watch Full Movie"}
               </button>
-              <button onClick={handleAddToWatchlist} className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full font-black text-lg transition flex items-center gap-2 shadow-xl shadow-red-600/20 active:scale-95 whitespace-nowrap">
+              <button 
+                onClick={handleAddToWatchlist} 
+                className="flex-1 md:flex-initial bg-red-600 hover:bg-red-700 text-white px-4 py-2 md:px-5 md:py-2.5 rounded-full font-bold text-sm md:text-base transition flex items-center justify-center gap-2 shadow-lg shadow-red-600/10 active:scale-95 whitespace-nowrap"
+              >
                 + Watchlist
               </button>
               <button 
                 onClick={() => setIsDownloadModalOpen(true)}
-                className="bg-white/10 hover:bg-white/20 text-white px-5 py-3 rounded-full font-black text-lg transition flex items-center justify-center gap-2 border border-white/10 active:scale-95"
+                className="bg-white/10 hover:bg-white/20 text-white p-2 md:p-2.5 rounded-full font-bold transition flex items-center justify-center border border-white/10 active:scale-95 shrink-0"
                 title="Download"
               >
-                <Download size={22} />
+                <Download size={20} />
               </button>
             </div>
           </div>
