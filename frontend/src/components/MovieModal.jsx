@@ -142,6 +142,9 @@ export default function MovieModal({ id, type, onClose, showToast }) {
               <div className="flex gap-4 mt-2 text-sm font-bold items-center">
                 <span className="text-green-500">{Math.round(details.vote_average * 10)}% Match</span>
                 <span className="text-gray-400 border border-gray-700 px-2 py-0.5 rounded">{(details.release_date || details.first_air_date)?.split("-")[0]}</span>
+                <span className="text-gray-500 bg-white/10 px-2 py-0.5 rounded uppercase tracking-wider" title="Use this ID in the Admin Panel to link a video!">
+                  TMDB ID: {details.id}
+                </span>
                 {trailerUrl && <a href={trailerUrl} target="_blank" rel="noreferrer" className="text-red-500 hover:text-red-400 underline decoration-2 underline-offset-4 transition-colors">Open in YouTube</a>}
               </div>
             </div>
