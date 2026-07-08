@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { ChevronLeft, ChevronRight, Play, X } from "lucide-react";
 import { auth } from "../firebase";
 import ConfirmModal from "./ConfirmModal";
+import { BACKEND_URL } from "../config";
 
 const IMG = "https://image.tmdb.org/t/p/";
 
@@ -13,7 +14,7 @@ export default function WatchlistRow({ onClick, showToast }) {
   const fetchWatchlist = async () => {
     if (!auth.currentUser) return;
     try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URI}/api/watchlist/${auth.currentUser.uid}`);
+      const res = await fetch(`${BACKEND_URL}/api/watchlist/${auth.currentUser.uid}`);
       const data = await res.json();
       setItems(data);
     } catch (err) {
@@ -30,7 +31,7 @@ export default function WatchlistRow({ onClick, showToast }) {
   const confirmDelete = async () => {
     if (!deleteId) return;
     try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URI}/api/watchlist/${deleteId}`, { method: 'DELETE' });
+      const res = await fetch(`${BACKEND_URL}/api/watchlist/${deleteId}`, { method: 'DELETE' });
       if (res.ok) {
         setItems(items.filter(item => item._id !== deleteId));
         showToast("Removed from watchlist", "success");
@@ -48,7 +49,7 @@ export default function WatchlistRow({ onClick, showToast }) {
     e.stopPropagation();
     const newStatus = currentStatus === 'watched' ? 'want_to_watch' : 'watched';
     try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URI}/api/watchlist/${id}`, {
+      const res = await fetch(`${BACKEND_URL}/api/watchlist/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })

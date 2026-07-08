@@ -14,9 +14,10 @@ router.get('/:userId', async (req, res) => {
 
 // ADD an item
 router.post('/', async (req, res) => {
+  console.log('POST /api/watchlist - Body:', req.body);
   const item = new Watchlist({
     userId: req.body.userId,
-    movieId: req.body.movieId,
+    movieId: String(req.body.movieId),
     title: req.body.title,
     posterPath: req.body.posterPath,
     mediaType: req.body.mediaType,
@@ -24,8 +25,10 @@ router.post('/', async (req, res) => {
 
   try {
     const newItem = await item.save();
+    console.log('Successfully saved to watchlist:', newItem._id);
     res.status(201).json(newItem);
   } catch (err) {
+    console.error('Error saving to watchlist:', err);
     if (err.code === 11000) {
       return res.status(400).json({ message: 'Movie already in watchlist' });
     }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { auth } from "../firebase";
-import { API, TMDB_API_KEY, IMG } from "../config";
+import { API, TMDB_API_KEY, IMG, BACKEND_URL } from "../config";
 
 export default function MovieModal({ id, type, onClose, showToast }) {
   const [details, setDetails] = useState(null);
@@ -57,27 +57,42 @@ export default function MovieModal({ id, type, onClose, showToast }) {
   if (!details) return null;
 
   const handleAddToWatchlist = async () => {
+    if (!auth.currentUser) {
+      showToast("Please login to add to watchlist", "error");
+      return;
+    }
+
     try {
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URI}/api/watchlist`, {
+      const response = await fetch(`${BACKEND_URL}/api/watchlist`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId: auth.currentUser?.uid,
+          userId: auth.currentUser.uid,
           movieId: details.id,
           title: details.title || details.name,
           posterPath: details.poster_path || details.backdrop_path,
           mediaType: type
         })
       });
+
       if (response.ok) {
         showToast("Added to Watchlist!", "success");
         window.dispatchEvent(new CustomEvent('watchlistUpdated'));
       } else {
-        const data = await response.json();
-        showToast(data.message || "Error adding to watchlist", "error");
+        const status = response.status;
+        let errorMessage = "Error adding to watchlist";
+        try {
+          const data = await response.json();
+          console.error(`Watchlist API Error (${status}):`, data);
+          errorMessage = data.message || errorMessage;
+        } catch (e) {
+          console.error(`Watchlist API Non-JSON Error (${status}):`, e);
+        }
+        showToast(errorMessage, "error");
       }
     } catch (err) {
-      showToast("Connection error", "error");
+      console.error("Watchlist API error:", err);
+      showToast("Connection error - is the backend running?", "error");
     }
   };
 

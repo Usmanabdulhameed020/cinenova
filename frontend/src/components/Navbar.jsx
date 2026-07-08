@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Search, User, LogOut, Trash2, ChevronDown } from "lucide-react";
 import { signOut, deleteUser } from "firebase/auth";
 import { auth } from "../firebase";
-import { API, TMDB_API_KEY, IMG } from "../config";
+import { API, TMDB_API_KEY, IMG, BACKEND_URL } from "../config";
 
 export default function Navbar({ onSearchClick, user, onSuggestionClick }) {
   const navigate = useNavigate();
@@ -90,7 +90,7 @@ export default function Navbar({ onSearchClick, user, onSuggestionClick }) {
       const currentUser = auth.currentUser;
       if (currentUser) {
         // 1. Delete user data from backend
-        await fetch(`/api/watchlist/user/${currentUser.uid}`, {
+        await fetch(`${BACKEND_URL}/api/watchlist/user/${currentUser.uid}`, {
           method: 'DELETE'
         });
 

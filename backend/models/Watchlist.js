@@ -7,7 +7,7 @@ const WatchlistSchema = new mongoose.Schema({
     index: true
   },
   movieId: {
-    type: Number,
+    type: String, // Changed to String for better compatibility
     required: true
   },
   title: {

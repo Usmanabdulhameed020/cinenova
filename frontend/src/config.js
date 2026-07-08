@@ -1,6 +1,7 @@
 export const TMDB_API_KEY = "bf56f434fe1c9dbf66acad7b84871724";
 export const API = "https://api.themoviedb.org/3";
 export const IMG = "https://image.tmdb.org/t/p/";
+export const BACKEND_URL = import.meta.env.VITE_BACKEND_URI || "https://cinenova-5to9.onrender.com";
 
 export const ENDPOINTS = {
   TRENDING: "/trending/all/week",
