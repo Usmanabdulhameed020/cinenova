@@ -94,9 +94,25 @@ export default function RecentlyWatchedRow({ onClick, showToast }) {
                   className="rounded-md object-cover w-full h-auto aspect-[2/3] bg-gray-800"
                 />
 
-                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent opacity-0 hover:opacity-100 transition-opacity flex flex-col justify-end p-4 rounded-md">
+                {item.progress > 0 && (
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-zinc-800/80 z-10 overflow-hidden">
+                    <div 
+                      className="h-full bg-red-600 transition-all duration-300 rounded-r-sm shadow-[0_0_8px_rgba(220,38,38,0.7)]" 
+                      style={{ width: `${item.progress}%` }}
+                    />
+                  </div>
+                )}
+
+                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent opacity-0 hover:opacity-100 transition-opacity flex flex-col justify-end p-4 rounded-md pb-6">
                   <p className="text-white font-bold text-sm truncate">{item.title}</p>
-                  <p className="text-red-500 text-xs font-bold uppercase tracking-wider">{item.mediaType}</p>
+                  <div className="flex justify-between items-center w-full mt-1">
+                    <p className="text-red-500 text-xs font-bold uppercase tracking-wider">{item.mediaType}</p>
+                    {item.progress > 0 && (
+                      <span className="text-[10px] text-zinc-100 font-bold bg-red-600/90 px-1.5 py-0.5 rounded shadow-sm">
+                        {item.progress}%
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
 

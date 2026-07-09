@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, User, LogOut, Trash2, ChevronDown } from "lucide-react";
+import { Search, User, LogOut, Trash2, ChevronDown, Settings } from "lucide-react";
 import { signOut, deleteUser } from "firebase/auth";
 import { auth } from "../firebase";
 import { API, TMDB_API_KEY, IMG, BACKEND_URL } from "../config";
+import SettingsModal from "./SettingsModal";
 
-export default function Navbar({ onSearchClick, user, onSuggestionClick }) {
+export default function Navbar({ onSearchClick, user, onSuggestionClick, showToast }) {
   const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -16,6 +17,8 @@ export default function Navbar({ onSearchClick, user, onSuggestionClick }) {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const dropdownRef = useRef(null);
   const searchRef = useRef(null);
@@ -99,7 +102,7 @@ export default function Navbar({ onSearchClick, user, onSuggestionClick }) {
       }
     } catch (error) {
       console.error("Delete Account Error:", error);
-      alert("For security reasons, please log in again before deleting your account.");
+      setErrorMessage("For security reasons, please log in again before deleting your account.");
     }
   };
 
@@ -189,6 +192,9 @@ export default function Navbar({ onSearchClick, user, onSuggestionClick }) {
                   <p className="text-white font-black truncate">{user?.displayName || "CineNova User"}</p>
                   <p className="text-gray-500 text-xs truncate">{user?.email}</p>
                 </div>
+                <button onClick={() => { setShowDropdown(false); setShowSettingsModal(true); }} className="w-full flex items-center gap-3 px-5 py-3 text-gray-300 hover:text-white hover:bg-white/5 transition-all text-sm font-semibold">
+                  <Settings size={18} /> Settings
+                </button>
                 <button onClick={() => { setShowDropdown(false); setShowLogoutModal(true); }} className="w-full flex items-center gap-3 px-5 py-3 text-gray-300 hover:text-white hover:bg-white/5 transition-all text-sm font-semibold">
                   <LogOut size={18} /> Sign Out
                 </button>
@@ -226,6 +232,30 @@ export default function Navbar({ onSearchClick, user, onSuggestionClick }) {
             <div className="flex flex-col gap-3">
               <button onClick={confirmDeleteAccount} className="w-full py-3 rounded-xl bg-red-600 hover:bg-red-700 transition text-white font-black shadow-lg shadow-red-600/20">Yes, Delete Everything</button>
               <button onClick={() => setShowDeleteModal(false)} className="w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 transition text-white font-bold">Wait, Go Back</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showSettingsModal && (
+        <SettingsModal 
+          onClose={() => setShowSettingsModal(false)}
+          showToast={showToast}
+        />
+      )}
+
+      {errorMessage && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/75 backdrop-blur-sm px-4">
+          <div className="bg-[#181818] w-full max-w-md rounded-2xl p-8 shadow-2xl border border-white/10 animate-[fadeIn_.2s_ease-in-out]">
+            <h2 className="text-2xl font-black text-white mb-3 uppercase italic text-red-500">Security Alert</h2>
+            <p className="text-gray-350 mb-8 leading-relaxed">{errorMessage}</p>
+            <div className="flex justify-end">
+              <button 
+                onClick={() => setErrorMessage("")} 
+                className="px-6 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition text-white font-bold"
+              >
+                Okay
+              </button>
             </div>
           </div>
         </div>

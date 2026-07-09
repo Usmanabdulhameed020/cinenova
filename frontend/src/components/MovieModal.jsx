@@ -11,6 +11,11 @@ export default function MovieModal({ id, type, onClose, showToast }) {
   const [playMode, setPlayMode] = useState("trailer"); // "trailer" or "movie"
   const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
 
+  // Load custom settings
+  const activeServer = localStorage.getItem("cineflow_setting_server") || "vidsrc.me";
+  const settingAutoplay = localStorage.getItem("cineflow_setting_autoplay") !== "false";
+  const settingMuted = localStorage.getItem("cineflow_setting_muted") !== "false";
+
   useEffect(() => {
     let isMounted = true;
     setTrailerUrl("");
@@ -49,6 +54,46 @@ export default function MovieModal({ id, type, onClose, showToast }) {
     getModalData();
     return () => { isMounted = false; };
   }, [id, type]);
+
+  useEffect(() => {
+    if (playMode !== "movie" || !details) return;
+
+    // runtime in minutes, fallback to 120 (movie) or 45 (tv series)
+    const runtime = details.runtime || (details.episode_run_time && details.episode_run_time[0]) || (type === "tv" ? 45 : 120);
+    const totalSeconds = runtime * 60;
+
+    const userId = auth.currentUser?.uid || 'guest';
+    const key = `cineflow_recent_${userId}`;
+    const stored = localStorage.getItem(key);
+    let list = stored ? JSON.parse(stored) : [];
+    const existing = list.find(item => item.id === details.id && item.mediaType === type);
+    let startSeconds = existing?.elapsedSeconds || 0;
+
+    const interval = setInterval(() => {
+      startSeconds += 5; // Track in 5 second steps
+      const progressPercent = Math.min(Math.round((startSeconds / totalSeconds) * 100), 100);
+
+      const updatedStored = localStorage.getItem(key);
+      let updatedList = updatedStored ? JSON.parse(updatedStored) : [];
+      
+      updatedList = updatedList.map(item => {
+        if (item.id === details.id && item.mediaType === type) {
+          return {
+            ...item,
+            elapsedSeconds: startSeconds,
+            progress: progressPercent,
+            watchedAt: new Date().toISOString()
+          };
+        }
+        return item;
+      });
+
+      localStorage.setItem(key, JSON.stringify(updatedList));
+      window.dispatchEvent(new CustomEvent('recentMoviesUpdated'));
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [playMode, details, type]);
 
   if (!details && isLoading)
     return (
@@ -106,6 +151,8 @@ export default function MovieModal({ id, type, onClose, showToast }) {
       const stored = localStorage.getItem(key);
       let list = stored ? JSON.parse(stored) : [];
       
+      const existing = list.find(item => item.id === details.id && item.mediaType === type);
+      
       list = list.filter(item => !(item.id === details.id && item.mediaType === type));
       
       list.unshift({
@@ -113,7 +160,9 @@ export default function MovieModal({ id, type, onClose, showToast }) {
         title: details.title || details.name,
         poster_path: details.poster_path || details.backdrop_path,
         mediaType: type,
-        watchedAt: new Date().toISOString()
+        watchedAt: new Date().toISOString(),
+        progress: existing?.progress || 0,
+        elapsedSeconds: existing?.elapsedSeconds || 0
       });
       
       if (list.length > 20) {
@@ -145,7 +194,7 @@ export default function MovieModal({ id, type, onClose, showToast }) {
         <div className="relative pt-[56.25%] bg-black overflow-hidden">
           {playMode === "movie" ? (
             <iframe
-              src={`https://vidsrc.me/embed/${type === 'tv' ? 'tv' : 'movie'}?tmdb=${details.id}`}
+              src={`https://${activeServer}/embed/${type === 'tv' ? 'tv' : 'movie'}?tmdb=${details.id}`}
               className="absolute top-0 left-0 w-full h-full border-0"
               allowFullScreen
               title="Full Movie"
@@ -153,7 +202,7 @@ export default function MovieModal({ id, type, onClose, showToast }) {
           ) : trailerUrl ? (
             <iframe
               src={trailerUrl.includes('youtube') 
-                ? `${trailerUrl.replace('watch?v=', 'embed/')}?autoplay=1&mute=1&controls=1&modestbranding=1&rel=0&enablejsapi=1&origin=${window.location.origin}`
+                ? `${trailerUrl.replace('watch?v=', 'embed/')}?autoplay=${settingAutoplay ? 1 : 0}&mute=${settingMuted ? 1 : 0}&controls=1&modestbranding=1&rel=0&enablejsapi=1&origin=${window.location.origin}`
                 : trailerUrl
               }
               className="absolute top-0 left-0 w-full h-full border-0"

@@ -4,22 +4,35 @@ import useFetch from "../hooks/useFetch";
 import { IMG, ENDPOINTS } from "../config";
 
 export default function Hero({ onClick }) {
-  const data = useFetch(ENDPOINTS.TRENDING);
-  const [item, setItem] = useState(null);
+  const { data, loading } = useFetch(ENDPOINTS.TRENDING);
+  const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    if (data.length > 0) setItem(data[0]);
+    if (!data || data.length === 0) return;
+
+    const interval = setInterval(() => {
+      setIndex((prevIndex) => (prevIndex + 1) % data.length);
+    }, 8000); // Change banner every 8 seconds
+
+    return () => clearInterval(interval);
   }, [data]);
 
-  if (!item) {
-    return <div className="h-[80vh] bg-gray-900" />;
+  const item = data && data.length > 0 ? data[index] : null;
+
+  if (loading || !item) {
+    return (
+      <div className="h-[85vh] bg-zinc-950 flex items-center justify-center">
+        <div className="animate-pulse w-full h-full bg-zinc-900" />
+      </div>
+    );
   }
 
   const type = item.media_type || (item.first_air_date ? "tv" : "movie");
 
   return (
     <header
-      className="relative h-[85vh] text-white flex items-center bg-center bg-cover"
+      key={item.id}
+      className="relative h-[85vh] text-white flex items-center bg-center bg-cover animate-[fadeIn_0.8s_ease-out]"
       style={{
         backgroundImage: `url(${IMG}original${item.backdrop_path})`,
       }}

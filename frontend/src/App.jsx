@@ -28,6 +28,7 @@ const PublicRoute = ({ user, children }) => {
 export default function App() {
   const [user, setUser] = useState(undefined);
   const [isSimulator, setIsSimulator] = useState(false);
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -35,6 +36,19 @@ export default function App() {
     });
 
     return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => setIsOffline(true);
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
   }, []);
 
   // Loading Splash Screen
@@ -88,6 +102,12 @@ export default function App() {
   if (isSimulator) {
     return (
       <div className="fixed inset-0 bg-zinc-950 flex flex-col items-center justify-center z-[9999] select-none font-sans overflow-hidden">
+        {isOffline && (
+          <div className="fixed top-0 left-0 right-0 z-[99999] bg-red-650 text-white font-bold text-center text-[10px] py-1.5 shadow-lg flex items-center justify-center gap-2 animate-[slideDown_0.3s_ease-out]">
+            <span className="animate-pulse">📡</span> PWA Offline Mode
+          </div>
+        )}
+        
         {/* Top Control Bar */}
         <div className="mb-4 flex items-center gap-4 bg-zinc-900 border border-zinc-800 px-4 py-2 rounded-full shadow-lg">
           <span className="text-zinc-400 text-xs font-bold uppercase tracking-wider">Mobile Preview Mode</span>
@@ -129,6 +149,17 @@ export default function App() {
 
   return (
     <>
+      {isOffline && (
+        <div className="fixed top-0 left-0 right-0 z-[99999] bg-red-600 text-white font-bold text-center text-xs md:text-sm py-2 shadow-lg flex items-center justify-center gap-2 animate-[slideDown_0.3s_ease-out]">
+          <span className="animate-pulse">📡</span> You are currently offline. Browsing in offline PWA mode.
+        </div>
+      )}
+      <style>{`
+        @keyframes slideDown {
+          from { transform: translateY(-100%); }
+          to { transform: translateY(0); }
+        }
+      `}</style>
       {appContent}
       <button 
         onClick={() => setIsSimulator(true)}

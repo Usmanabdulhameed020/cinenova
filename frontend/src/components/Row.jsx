@@ -4,7 +4,7 @@ import useFetch from "../hooks/useFetch";
 import MovieCard from "./MovieCard";
 
 export default function Row({ title, url, onClick }) {
-  const items = useFetch(url);
+  const { data: items, loading } = useFetch(url);
   const rowRef = useRef(null);
 
   const slide = (direction) => {
@@ -21,7 +21,7 @@ export default function Row({ title, url, onClick }) {
     }
   };
 
-  if (!items?.length) return null;
+  if (!loading && !items?.length) return null;
 
   return (
     <section className="relative px-4 md:px-12 py-4">
@@ -41,13 +41,20 @@ export default function Row({ title, url, onClick }) {
           ref={rowRef}
           className="flex space-x-4 overflow-x-scroll no-scrollbar scroll-smooth py-10"
         >
-          {items.map((item) => (
-            <MovieCard
-              key={item.id}
-              item={item}
-              onClick={onClick}
-            />
-          ))}
+          {loading
+            ? Array.from({ length: 6 }).map((_, idx) => (
+                <div 
+                  key={idx} 
+                  className="flex-none w-36 md:w-56 aspect-[2/3] bg-zinc-900 rounded-md animate-pulse border border-white/5"
+                />
+              ))
+            : items.map((item) => (
+                <MovieCard
+                  key={item.id}
+                  item={item}
+                  onClick={onClick}
+                />
+              ))}
         </div>
 
         <button

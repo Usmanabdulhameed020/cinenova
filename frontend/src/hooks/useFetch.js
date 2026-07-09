@@ -3,9 +3,11 @@ import { API, TMDB_API_KEY } from "../config";
 
 const useFetch = (url) => {
   const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!url) return;
+    setLoading(true);
 
     const fetchData = async () => {
       try {
@@ -26,13 +28,15 @@ const useFetch = (url) => {
         setData(sorted);
       } catch (err) {
         console.error(err);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchData();
   }, [url]);
 
-  return data;
+  return { data, loading };
 };
 
 export default useFetch;
