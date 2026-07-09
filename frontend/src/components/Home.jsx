@@ -30,6 +30,41 @@ export default function Home({ user }) {
   const [searchUrl, setSearchUrl] = useState(null);
   const [toast, setToast] = useState(null);
   const [activeCategory, setActiveCategory] = useState("all");
+  
+  const [activeProfile, setActiveProfile] = useState(() => {
+    if (!user) return { id: 'adult', name: 'Adult', isKids: false };
+    const saved = localStorage.getItem(`cineflow_profile_${user?.uid}`);
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  React.useEffect(() => {
+    if (!user) {
+      setActiveProfile({ id: 'adult', name: 'Adult', isKids: false });
+      return;
+    }
+    const saved = localStorage.getItem(`cineflow_profile_${user.uid}`);
+    if (saved) {
+      setActiveProfile(JSON.parse(saved));
+    } else {
+      setActiveProfile(null);
+    }
+  }, [user]);
+
+  // Listen for profile switch events from Navbar
+  React.useEffect(() => {
+    const handleSwitch = () => {
+      setActiveProfile(null);
+    };
+    window.addEventListener('switchProfile', handleSwitch);
+    return () => window.removeEventListener('switchProfile', handleSwitch);
+  }, []);
+
+  const selectProfile = (profile) => {
+    if (user) {
+      localStorage.setItem(`cineflow_profile_${user.uid}`, JSON.stringify(profile));
+    }
+    setActiveProfile(profile);
+  };
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
@@ -46,6 +81,43 @@ export default function Home({ user }) {
       behavior: "smooth",
     });
   };
+
+  if (user && !activeProfile) {
+    return (
+      <div className="bg-gray-950 text-white min-h-screen flex flex-col items-center justify-center relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-accent/20 via-gray-950 to-gray-950 opacity-40"></div>
+        <h1 className="text-4xl md:text-5xl font-black mb-12 relative z-10 tracking-tight">Who's Watching?</h1>
+        <div className="flex gap-8 relative z-10">
+          <button 
+            onClick={() => selectProfile({ id: 'adult', name: 'Adult', isKids: false })}
+            className="group flex flex-col items-center"
+          >
+            <div className="w-32 h-32 md:w-40 md:h-40 rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center text-6xl shadow-xl group-hover:scale-105 group-hover:ring-4 group-hover:ring-accent transition-all duration-300">
+              🍿
+            </div>
+            <span className="mt-4 text-xl font-medium text-gray-300 group-hover:text-white transition-colors">Adult</span>
+          </button>
+          
+          <button 
+            onClick={() => selectProfile({ id: 'kids', name: 'Kids', isKids: true })}
+            className="group flex flex-col items-center"
+          >
+            <div className="w-32 h-32 md:w-40 md:h-40 rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center text-6xl shadow-xl group-hover:scale-105 group-hover:ring-4 group-hover:ring-blue-500 transition-all duration-300">
+              🐣
+            </div>
+            <span className="mt-4 text-xl font-medium text-gray-300 group-hover:text-white transition-colors">Kids</span>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const visibleCategories = CATEGORIES.filter(cat => {
+    if (activeProfile?.isKids) {
+      return ['all', 'recent', 'watchlist', 'anime'].includes(cat.id);
+    }
+    return true;
+  });
 
   return (
     <div className="bg-gray-950 text-white min-h-screen selection:bg-red-600 overflow-x-hidden">
@@ -77,17 +149,17 @@ export default function Home({ user }) {
         showToast={showToast}
       />
 
-      <Hero onClick={(id, type) => setSelected({ id, type })} />
+      <Hero onClick={(id, type) => setSelected({ id, type })} activeProfile={activeProfile} />
 
       {/* Category Tabs */}
       <div className="flex space-x-3 overflow-x-scroll no-scrollbar py-6 px-4 md:px-12 relative z-30 -mt-8 scroll-smooth select-none">
-        {CATEGORIES.map((cat) => (
+        {visibleCategories.map((cat) => (
           <button
             key={cat.id}
             onClick={() => setActiveCategory(cat.id)}
             className={`px-5 py-2.5 rounded-full text-xs font-bold tracking-wide uppercase transition-all duration-300 border active:scale-95 shrink-0 shadow-md ${
               activeCategory === cat.id
-                ? "bg-red-600 border-red-600 text-white shadow-red-600/20"
+                ? "bg-accent border-accent text-white shadow-accent"
                 : "bg-[#181818]/60 border-white/5 text-gray-400 hover:text-white hover:bg-white/5 backdrop-blur-md"
             }`}
           >
@@ -101,6 +173,7 @@ export default function Home({ user }) {
           <RecentlyWatchedRow 
             onClick={(id, type) => setSelected({ id, type })}
             showToast={showToast}
+            activeProfile={activeProfile}
           />
         )}
 
@@ -108,6 +181,7 @@ export default function Home({ user }) {
           <WatchlistRow 
             onClick={(id, type) => setSelected({ id, type })}
             showToast={showToast}
+            activeProfile={activeProfile}
           />
         )}
 
@@ -121,7 +195,7 @@ export default function Home({ user }) {
           />
         )}
 
-        {(activeCategory === 'all' || activeCategory === 'trending') && (
+        {!activeProfile?.isKids && (activeCategory === 'all' || activeCategory === 'trending') && (
           <Row
             title="Trending Now"
             url={ENDPOINTS.TRENDING}
@@ -131,7 +205,17 @@ export default function Home({ user }) {
           />
         )}
 
-        {(activeCategory === 'all' || activeCategory === 'top_rated') && (
+        {activeProfile?.isKids && (activeCategory === 'all' || activeCategory === 'trending') && (
+          <Row
+            title="Kids & Family"
+            url="/discover/movie?with_genres=16,10751"
+            onClick={(id, type) =>
+              setSelected({ id, type })
+            }
+          />
+        )}
+
+        {!activeProfile?.isKids && (activeCategory === 'all' || activeCategory === 'top_rated') && (
           <Row
             title="Top Rated"
             url={ENDPOINTS.TOP_RATED}
@@ -141,7 +225,7 @@ export default function Home({ user }) {
           />
         )}
 
-        {(activeCategory === 'all' || activeCategory === 'tv') && (
+        {!activeProfile?.isKids && (activeCategory === 'all' || activeCategory === 'tv') && (
           <Row
             title="TV Series"
             url={ENDPOINTS.TV}
@@ -151,7 +235,7 @@ export default function Home({ user }) {
           />
         )}
 
-        {(activeCategory === 'all' || activeCategory === 'action') && (
+        {!activeProfile?.isKids && (activeCategory === 'all' || activeCategory === 'action') && (
           <Row
             title="Action Packed"
             url={ENDPOINTS.ACTION}
@@ -161,7 +245,7 @@ export default function Home({ user }) {
           />
         )}
 
-        {(activeCategory === 'all' || activeCategory === 'kdrama') && (
+        {!activeProfile?.isKids && (activeCategory === 'all' || activeCategory === 'kdrama') && (
           <Row
             title="K-Drama Series"
             url={ENDPOINTS.KDRAMA}
@@ -171,7 +255,7 @@ export default function Home({ user }) {
           />
         )}
 
-        {(activeCategory === 'all' || activeCategory === 'cdrama') && (
+        {!activeProfile?.isKids && (activeCategory === 'all' || activeCategory === 'cdrama') && (
           <Row
             title="C-Drama Series"
             url={ENDPOINTS.CDRAMA}
@@ -181,7 +265,7 @@ export default function Home({ user }) {
           />
         )}
 
-        {(activeCategory === 'all' || activeCategory === 'english') && (
+        {!activeProfile?.isKids && (activeCategory === 'all' || activeCategory === 'english') && (
           <Row
             title="English Movies"
             url={ENDPOINTS.ENGLISH}
@@ -191,7 +275,7 @@ export default function Home({ user }) {
           />
         )}
 
-        {(activeCategory === 'all' || activeCategory === 'nollywood') && (
+        {!activeProfile?.isKids && (activeCategory === 'all' || activeCategory === 'nollywood') && (
           <Row
             title="Nollywood Movies"
             url={ENDPOINTS.NOLLYWOOD}
@@ -201,7 +285,7 @@ export default function Home({ user }) {
           />
         )}
 
-        {(activeCategory === 'all' || activeCategory === 'bollywood') && (
+        {!activeProfile?.isKids && (activeCategory === 'all' || activeCategory === 'bollywood') && (
           <Row
             title="Bollywood Movies"
             url={ENDPOINTS.BOLLYWOOD}
@@ -221,7 +305,7 @@ export default function Home({ user }) {
           />
         )}
 
-        {(activeCategory === 'all' || activeCategory === 'yoruba') && (
+        {!activeProfile?.isKids && (activeCategory === 'all' || activeCategory === 'yoruba') && (
           <Row
             title="Yoruba Cinema"
             url={ENDPOINTS.YORUBA}
@@ -231,7 +315,7 @@ export default function Home({ user }) {
           />
         )}
 
-        {activeCategory === 'all' && (
+        {!activeProfile?.isKids && activeCategory === 'all' && (
           <Row
             title="Coming Soon"
             url={ENDPOINTS.UPCOMING}
@@ -247,6 +331,7 @@ export default function Home({ user }) {
           id={selected.id}
           type={selected.type}
           onClose={() => setSelected(null)}
+          onSimilarClick={(id, type) => setSelected({ id, type })}
           showToast={showToast}
         />
       )}

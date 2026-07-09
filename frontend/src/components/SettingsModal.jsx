@@ -9,15 +9,18 @@ export default function SettingsModal({ onClose, showToast }) {
   const [cacheSize, setCacheSize] = useState("0 KB");
   const [showConfirm, setShowConfirm] = useState(false);
 
+
   useEffect(() => {
     // Load current settings from localStorage
     const savedServer = localStorage.getItem("cineflow_setting_server") || "vidsrc.me";
     const savedAutoplay = localStorage.getItem("cineflow_setting_autoplay") !== "false";
     const savedMuted = localStorage.getItem("cineflow_setting_muted") !== "false";
 
+
     setServer(savedServer);
     setAutoplay(savedAutoplay);
     setMuted(savedMuted);
+
 
     // Calculate approximate storage space used by PWA cache
     if (navigator.storage && navigator.storage.estimate) {
@@ -33,6 +36,8 @@ export default function SettingsModal({ onClose, showToast }) {
     setter(val);
     window.dispatchEvent(new CustomEvent("settingsUpdated"));
   };
+
+
 
   const handleClearData = async () => {
     try {
@@ -87,18 +92,20 @@ export default function SettingsModal({ onClose, showToast }) {
             <div className="grid grid-cols-2 gap-2 bg-black/40 p-1 rounded-xl border border-white/5">
               <button 
                 onClick={() => handleSave("cineflow_setting_server", "vidsrc.me", setServer)}
-                className={`py-2 rounded-lg text-sm font-bold transition-all ${server === "vidsrc.me" ? "bg-red-600 text-white shadow-lg" : "text-gray-400 hover:text-white hover:bg-white/5"}`}
+                className={`py-2 rounded-lg text-sm font-bold transition-all ${server === "vidsrc.me" ? "bg-accent text-white shadow-accent" : "text-gray-400 hover:text-white hover:bg-white/5"}`}
               >
                 Server 1 (Primary)
               </button>
               <button 
                 onClick={() => handleSave("cineflow_setting_server", "vidsrc.to", setServer)}
-                className={`py-2 rounded-lg text-sm font-bold transition-all ${server === "vidsrc.to" ? "bg-red-600 text-white shadow-lg" : "text-gray-400 hover:text-white hover:bg-white/5"}`}
+                className={`py-2 rounded-lg text-sm font-bold transition-all ${server === "vidsrc.to" ? "bg-accent text-white shadow-accent" : "text-gray-400 hover:text-white hover:bg-white/5"}`}
               >
                 Server 2 (Backup)
               </button>
             </div>
           </div>
+
+
 
           {/* Autoplay Toggle */}
           <div className="flex justify-between items-center bg-black/20 p-3 rounded-xl border border-white/5">
@@ -110,7 +117,7 @@ export default function SettingsModal({ onClose, showToast }) {
             </div>
             <button 
               onClick={() => handleSave("cineflow_setting_autoplay", !autoplay ? "true" : "false", (v) => setAutoplay(v === "true"))}
-              className={`w-12 h-6 rounded-full p-1 transition-all ${autoplay ? "bg-red-600 flex justify-end" : "bg-zinc-700 flex justify-start"}`}
+              className={`w-12 h-6 rounded-full p-1 transition-all ${autoplay ? "bg-accent flex justify-end" : "bg-zinc-700 flex justify-start"}`}
             >
               <div className="w-4 h-full bg-white rounded-full shadow" />
             </button>
@@ -126,7 +133,7 @@ export default function SettingsModal({ onClose, showToast }) {
             </div>
             <button 
               onClick={() => handleSave("cineflow_setting_muted", !muted ? "true" : "false", (v) => setMuted(v === "true"))}
-              className={`w-12 h-6 rounded-full p-1 transition-all ${muted ? "bg-red-600 flex justify-end" : "bg-zinc-700 flex justify-start"}`}
+              className={`w-12 h-6 rounded-full p-1 transition-all ${muted ? "bg-accent flex justify-end" : "bg-zinc-700 flex justify-start"}`}
             >
               <div className="w-4 h-full bg-white rounded-full shadow" />
             </button>
@@ -148,7 +155,7 @@ export default function SettingsModal({ onClose, showToast }) {
 
             <button 
               onClick={() => setShowConfirm(true)}
-              className="w-full bg-red-600/10 border border-red-500/30 hover:bg-red-600 text-red-500 hover:text-white py-2.5 rounded-xl font-bold text-sm transition-all duration-300 active:scale-95 flex items-center justify-center gap-2"
+              className="w-full bg-accent/10 border border-accent/30 hover:bg-accent text-accent hover:text-white py-2.5 rounded-xl font-bold text-sm transition-all duration-300 active:scale-95 flex items-center justify-center gap-2"
             >
               <Trash2 size={16} /> Clear App Cache & History
             </button>
@@ -159,7 +166,7 @@ export default function SettingsModal({ onClose, showToast }) {
       {showConfirm && (
         <div className="fixed inset-0 z-[400] flex items-center justify-center bg-black/80 backdrop-blur-sm px-4 animate-[fadeIn_0.2s_ease-out]">
           <div className="bg-[#1a1a1a] w-full max-w-sm rounded-2xl p-6 shadow-2xl border border-white/10">
-            <h3 className="text-xl font-black text-white mb-2 uppercase italic text-red-500">Clear all data?</h3>
+            <h3 className="text-xl font-black text-white mb-2 uppercase italic text-accent">Clear all data?</h3>
             <p className="text-gray-400 text-sm mb-6 leading-relaxed">
               This will erase your watch history, offline cache, and reload the app. This action cannot be undone.
             </p>
@@ -172,7 +179,7 @@ export default function SettingsModal({ onClose, showToast }) {
               </button>
               <button 
                 onClick={handleClearData} 
-                className="flex-1 py-2.5 rounded-xl bg-red-650 hover:bg-red-750 text-white font-bold transition text-xs shadow-lg shadow-red-600/20"
+                className="flex-1 py-2.5 rounded-xl bg-accent hover:bg-accent/80 text-white font-bold transition text-xs shadow-accent"
               >
                 Clear & Restart
               </button>

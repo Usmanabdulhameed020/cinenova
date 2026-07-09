@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, User, LogOut, Trash2, ChevronDown, Settings } from "lucide-react";
+import { Search, User, LogOut, Trash2, ChevronDown, Settings, Users } from "lucide-react";
 import { signOut, deleteUser } from "firebase/auth";
 import { auth } from "../firebase";
 import { API, TMDB_API_KEY, IMG, BACKEND_URL } from "../config";
@@ -168,6 +168,7 @@ export default function Navbar({ onSearchClick, user, onSuggestionClick, showToa
             )}
           </div>
 
+
           <div className="relative" ref={dropdownRef}>
             <button 
               onClick={() => setShowDropdown(!showDropdown)}
@@ -194,6 +195,15 @@ export default function Navbar({ onSearchClick, user, onSuggestionClick, showToa
                 </div>
                 <button onClick={() => { setShowDropdown(false); setShowSettingsModal(true); }} className="w-full flex items-center gap-3 px-5 py-3 text-gray-300 hover:text-white hover:bg-white/5 transition-all text-sm font-semibold">
                   <Settings size={18} /> Settings
+                </button>
+                <button 
+                  onClick={() => { 
+                    setShowDropdown(false); 
+                    window.dispatchEvent(new CustomEvent('switchProfile')); 
+                  }} 
+                  className="w-full flex items-center gap-3 px-5 py-3 text-gray-300 hover:text-white hover:bg-white/5 transition-all text-sm font-semibold"
+                >
+                  <Users size={18} /> Switch Profile
                 </button>
                 <button onClick={() => { setShowDropdown(false); setShowLogoutModal(true); }} className="w-full flex items-center gap-3 px-5 py-3 text-gray-300 hover:text-white hover:bg-white/5 transition-all text-sm font-semibold">
                   <LogOut size={18} /> Sign Out

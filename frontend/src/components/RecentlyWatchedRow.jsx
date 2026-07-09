@@ -5,14 +5,15 @@ import { onAuthStateChanged } from "firebase/auth";
 
 const IMG = "https://image.tmdb.org/t/p/";
 
-export default function RecentlyWatchedRow({ onClick, showToast }) {
+export default function RecentlyWatchedRow({ onClick, showToast, activeProfile }) {
   const [items, setItems] = useState([]);
   const rowRef = useRef(null);
 
   const fetchRecent = () => {
     try {
       const userId = auth.currentUser?.uid || 'guest';
-      const key = `cineflow_recent_${userId}`;
+      const profileId = activeProfile?.id || 'adult';
+      const key = profileId === 'adult' ? `cineflow_recent_${userId}` : `cineflow_recent_${userId}_${profileId}`;
       const stored = localStorage.getItem(key);
       setItems(stored ? JSON.parse(stored) : []);
     } catch (err) {
@@ -35,14 +36,15 @@ export default function RecentlyWatchedRow({ onClick, showToast }) {
       window.removeEventListener('recentMoviesUpdated', fetchRecent);
       unsubscribe();
     };
-  }, []);
+  }, [activeProfile]);
 
   const handleClearItem = (e, id, mediaType) => {
     e.preventDefault();
     e.stopPropagation();
     try {
       const userId = auth.currentUser?.uid || 'guest';
-      const key = `cineflow_recent_${userId}`;
+      const profileId = activeProfile?.id || 'adult';
+      const key = profileId === 'adult' ? `cineflow_recent_${userId}` : `cineflow_recent_${userId}_${profileId}`;
       const stored = localStorage.getItem(key);
       if (stored) {
         let list = JSON.parse(stored);

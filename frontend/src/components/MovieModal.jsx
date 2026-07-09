@@ -4,7 +4,7 @@ import DownloadModal from "./DownloadModal";
 import { auth } from "../firebase";
 import { API, TMDB_API_KEY, IMG, BACKEND_URL } from "../config";
 
-export default function MovieModal({ id, type, onClose, showToast }) {
+export default function MovieModal({ id, type, onClose, onSimilarClick, showToast }) {
   const [details, setDetails] = useState(null);
   const [trailerUrl, setTrailerUrl] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -24,7 +24,7 @@ export default function MovieModal({ id, type, onClose, showToast }) {
 
     const getModalData = async () => {
       try {
-        const detailRes = await fetch(`${API}/${type}/${id}?api_key=${TMDB_API_KEY}`);
+        const detailRes = await fetch(`${API}/${type}/${id}?api_key=${TMDB_API_KEY}&append_to_response=credits,similar`);
         const detailJson = await detailRes.json();
         if (!isMounted) return;
         setDetails(detailJson);
@@ -55,6 +55,18 @@ export default function MovieModal({ id, type, onClose, showToast }) {
     return () => { isMounted = false; };
   }, [id, type]);
 
+  const getProfileKeySuffix = (userId) => {
+    try {
+      if (userId === 'guest') return '';
+      const savedProfile = localStorage.getItem(`cineflow_profile_${userId}`);
+      if (savedProfile) {
+        const profile = JSON.parse(savedProfile);
+        return profile.id === 'adult' ? '' : `_${profile.id}`;
+      }
+    } catch(e) {}
+    return '';
+  };
+
   useEffect(() => {
     if (playMode !== "movie" || !details) return;
 
@@ -63,7 +75,8 @@ export default function MovieModal({ id, type, onClose, showToast }) {
     const totalSeconds = runtime * 60;
 
     const userId = auth.currentUser?.uid || 'guest';
-    const key = `cineflow_recent_${userId}`;
+    const suffix = getProfileKeySuffix(userId);
+    const key = `cineflow_recent_${userId}${suffix}`;
     const stored = localStorage.getItem(key);
     let list = stored ? JSON.parse(stored) : [];
     const existing = list.find(item => item.id === details.id && item.mediaType === type);
@@ -111,11 +124,14 @@ export default function MovieModal({ id, type, onClose, showToast }) {
     }
 
     try {
+      const suffix = getProfileKeySuffix(auth.currentUser.uid);
+      const userIdToSave = `${auth.currentUser.uid}${suffix}`;
+      
       const response = await fetch(`${BACKEND_URL}/api/watchlist`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId: auth.currentUser.uid,
+          userId: userIdToSave,
           movieId: details.id,
           title: details.title || details.name,
           posterPath: details.poster_path || details.backdrop_path,
@@ -147,7 +163,8 @@ export default function MovieModal({ id, type, onClose, showToast }) {
   const addToRecent = () => {
     try {
       const userId = auth.currentUser?.uid || 'guest';
-      const key = `cineflow_recent_${userId}`;
+      const suffix = getProfileKeySuffix(userId);
+      const key = `cineflow_recent_${userId}${suffix}`;
       const stored = localStorage.getItem(key);
       let list = stored ? JSON.parse(stored) : [];
       
@@ -261,6 +278,45 @@ export default function MovieModal({ id, type, onClose, showToast }) {
               {details.genres.map(g => (
                 <span key={g.id} className="text-xs font-bold text-gray-500 uppercase tracking-widest px-3 py-1 bg-white/5 rounded-full border border-white/5">{g.name}</span>
               ))}
+            </div>
+          )}
+
+          {details.credits?.cast?.length > 0 && (
+            <div className="mt-10">
+              <h3 className="text-xl font-bold text-white mb-4 uppercase tracking-wider">Top Cast</h3>
+              <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4">
+                {details.credits.cast.slice(0, 15).map((person) => (
+                  <div key={person.id} className="w-24 shrink-0 flex flex-col items-center text-center">
+                    <img 
+                      src={person.profile_path ? `${IMG}w185${person.profile_path}` : "https://via.placeholder.com/96x144?text=No+Img"} 
+                      alt={person.name}
+                      className="w-20 h-20 md:w-24 md:h-24 object-cover rounded-full bg-gray-800 shadow-lg border border-white/10 mb-3"
+                    />
+                    <span className="text-white text-xs font-bold leading-tight">{person.name}</span>
+                    <span className="text-gray-500 text-[10px] leading-tight mt-1">{person.character}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {details.similar?.results?.length > 0 && (
+            <div className="mt-10">
+              <h3 className="text-xl font-bold text-white mb-4 uppercase tracking-wider">More Like This</h3>
+              <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4">
+                {details.similar.results.slice(0, 12).map((sim) => (
+                  <div 
+                    key={sim.id} 
+                    className="relative group rounded-lg overflow-hidden bg-gray-900 border border-white/5 cursor-pointer" 
+                    onClick={() => onSimilarClick && onSimilarClick(sim.id, sim.media_type || type)}
+                  >
+                    <img src={sim.poster_path ? `${IMG}w342${sim.poster_path}` : "https://via.placeholder.com/342x513?text=No+Img"} alt={sim.title || sim.name} className="w-full h-auto object-cover group-hover:scale-110 transition duration-500" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
+                      <span className="text-white text-xs font-bold truncate">{sim.title || sim.name}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>

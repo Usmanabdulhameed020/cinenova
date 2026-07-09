@@ -3,8 +3,11 @@ import { Play, Info } from "lucide-react";
 import useFetch from "../hooks/useFetch";
 import { IMG, ENDPOINTS } from "../config";
 
-export default function Hero({ onClick }) {
-  const { data, loading } = useFetch(ENDPOINTS.TRENDING);
+export default function Hero({ onClick, activeProfile }) {
+  const endpoint = activeProfile?.isKids 
+    ? "/discover/movie?with_genres=16,10751" 
+    : ENDPOINTS.TRENDING;
+  const { data, loading } = useFetch(endpoint);
   const [index, setIndex] = useState(0);
 
   useEffect(() => {

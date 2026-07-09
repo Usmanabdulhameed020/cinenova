@@ -6,15 +6,18 @@ import { BACKEND_URL } from "../config";
 
 const IMG = "https://image.tmdb.org/t/p/";
 
-export default function WatchlistRow({ onClick, showToast }) {
+export default function WatchlistRow({ onClick, showToast, activeProfile }) {
   const [items, setItems] = useState([]);
   const [deleteId, setDeleteId] = useState(null);
+  const [sortBy, setSortBy] = useState('date');
   const rowRef = useRef(null);
 
   const fetchWatchlist = async () => {
     if (!auth.currentUser) return;
     try {
-      const res = await fetch(`${BACKEND_URL}/api/watchlist/${auth.currentUser.uid}`);
+      const profileId = activeProfile?.id || 'adult';
+      const uidKey = profileId === 'adult' ? auth.currentUser.uid : `${auth.currentUser.uid}_${profileId}`;
+      const res = await fetch(`${BACKEND_URL}/api/watchlist/${uidKey}`);
       const data = await res.json();
       setItems(data);
     } catch (err) {
@@ -26,7 +29,7 @@ export default function WatchlistRow({ onClick, showToast }) {
     fetchWatchlist();
     window.addEventListener('watchlistUpdated', fetchWatchlist);
     return () => window.removeEventListener('watchlistUpdated', fetchWatchlist);
-  }, []);
+  }, [activeProfile]);
 
   const confirmDelete = async () => {
     if (!deleteId) return;
@@ -73,12 +76,33 @@ export default function WatchlistRow({ onClick, showToast }) {
 
   if (!items?.length) return null;
 
+  const sortedItems = [...items].sort((a, b) => {
+    if (sortBy === 'alpha') {
+      return (a.title || "").localeCompare(b.title || "");
+    }
+    if (sortBy === 'status') {
+      return (a.status || "").localeCompare(b.status || "");
+    }
+    return 0; // 'date' defaults to backend insertion order
+  });
+
   return (
     <>
       <section className="relative px-4 md:px-12 py-4">
-        <h2 className="text-xl md:text-2xl font-bold mb-2 text-red-500 tracking-wide">
-          My Watchlist
-        </h2>
+        <div className="flex justify-between items-end mb-2">
+          <h2 className="text-xl md:text-2xl font-bold text-red-500 tracking-wide">
+            My Watchlist
+          </h2>
+          <select 
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="bg-black/50 border border-white/10 text-gray-300 text-xs font-bold rounded-lg px-3 py-1.5 outline-none focus:border-red-500 transition-colors"
+          >
+            <option value="date">Date Added</option>
+            <option value="alpha">Alphabetical (A-Z)</option>
+            <option value="status">By Status</option>
+          </select>
+        </div>
 
         <div className="group relative">
           <button onClick={() => slide("left")} className="absolute left-0 top-0 bottom-0 z-40 w-12 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity text-white flex items-center justify-center">
@@ -86,7 +110,7 @@ export default function WatchlistRow({ onClick, showToast }) {
           </button>
 
           <div ref={rowRef} className="flex space-x-4 overflow-x-scroll no-scrollbar scroll-smooth py-10">
-            {items.map((item) => (
+            {sortedItems.map((item) => (
               <div
                 key={item._id}
                 className="relative flex-none w-36 md:w-56 transition-transform duration-300 ease-in-out hover:scale-110 hover:z-50 shadow-xl group/card"

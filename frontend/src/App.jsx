@@ -25,9 +25,11 @@ const PublicRoute = ({ user, children }) => {
   return children;
 };
 
+
 export default function App() {
   const [user, setUser] = useState(undefined);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
+
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {

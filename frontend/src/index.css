@@ -1,1 +1,26 @@
 @import "tailwindcss";
+
+:root {
+  --accent-color: #e50914; /* Default: Netflix Red */
+  --accent-hover-color: #b81d24;
+  --accent-glow-color: rgba(229, 9, 20, 0.2);
+}
+
+.bg-accent {
+  background-color: var(--accent-color) !important;
+}
+.hover\:bg-accent:hover {
+  background-color: var(--accent-hover-color) !important;
+}
+.text-accent {
+  color: var(--accent-color) !important;
+}
+.border-accent {
+  border-color: var(--accent-color) !important;
+}
+.shadow-accent {
+  box-shadow: 0 10px 15px -3px var(--accent-glow-color), 0 4px 6px -4px var(--accent-glow-color) !important;
+}
+.shadow-accent-lg {
+  box-shadow: 0 20px 25px -5px var(--accent-glow-color), 0 8px 10px -6px var(--accent-glow-color) !important;
+}
