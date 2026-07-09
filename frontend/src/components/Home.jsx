@@ -5,6 +5,7 @@ import Row from "./Row";
 import MovieModal from "./MovieModal";
 import Toast from "./Toast";
 import WatchlistRow from "./WatchlistRow";
+import RecentlyWatchedRow from "./RecentlyWatchedRow";
 import { ENDPOINTS } from "../config";
 
 export default function Home({ user }) {
@@ -59,6 +60,11 @@ export default function Home({ user }) {
       <Hero onClick={(id, type) => setSelected({ id, type })} />
 
       <div className="-mt-20 relative z-20 pb-20">
+        <RecentlyWatchedRow 
+          onClick={(id, type) => setSelected({ id, type })}
+          showToast={showToast}
+        />
+
         <WatchlistRow 
           onClick={(id, type) => setSelected({ id, type })}
           showToast={showToast}

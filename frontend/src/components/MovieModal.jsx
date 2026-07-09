@@ -99,6 +99,42 @@ export default function MovieModal({ id, type, onClose, showToast }) {
     }
   };
 
+  const addToRecent = () => {
+    try {
+      const userId = auth.currentUser?.uid || 'guest';
+      const key = `cineflow_recent_${userId}`;
+      const stored = localStorage.getItem(key);
+      let list = stored ? JSON.parse(stored) : [];
+      
+      list = list.filter(item => !(item.id === details.id && item.mediaType === type));
+      
+      list.unshift({
+        id: details.id,
+        title: details.title || details.name,
+        poster_path: details.poster_path || details.backdrop_path,
+        mediaType: type,
+        watchedAt: new Date().toISOString()
+      });
+      
+      if (list.length > 20) {
+        list = list.slice(0, 20);
+      }
+      
+      localStorage.setItem(key, JSON.stringify(list));
+      window.dispatchEvent(new CustomEvent('recentMoviesUpdated'));
+    } catch (err) {
+      console.error("Error saving to recently watched:", err);
+    }
+  };
+
+  const handlePlayMovie = () => {
+    const nextMode = playMode === "movie" ? "trailer" : "movie";
+    setPlayMode(nextMode);
+    if (nextMode === "movie") {
+      addToRecent();
+    }
+  };
+
   return (
     <div onClick={onClose} className="fixed inset-0 bg-black/95 z-[200] flex justify-center items-center p-4 backdrop-blur-sm">
       <div onClick={(e) => e.stopPropagation()} className="bg-[#181818] max-w-4xl w-full max-h-[90vh] overflow-y-auto no-scrollbar rounded-xl relative shadow-2xl border border-white/5">
@@ -150,7 +186,7 @@ export default function MovieModal({ id, type, onClose, showToast }) {
             </div>
             <div className="flex flex-wrap items-center gap-2 shrink-0 w-full md:w-auto">
               <button 
-                onClick={() => setPlayMode(playMode === "movie" ? "trailer" : "movie")}
+                onClick={handlePlayMovie}
                 className="flex-1 md:flex-initial bg-white hover:bg-gray-200 text-black px-4 py-2 md:px-5 md:py-2.5 rounded-full font-bold text-sm md:text-base transition flex items-center justify-center gap-2 active:scale-95 whitespace-nowrap"
               >
                 {playMode === "movie" ? "Watch Trailer" : "Watch Full Movie"}
